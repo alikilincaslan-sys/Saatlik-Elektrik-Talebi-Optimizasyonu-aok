@@ -18,7 +18,8 @@ alt.renderers.set_embed_options(actions=False)
 
 st.set_page_config(page_title="PyPSA Dispatch 8760", layout="wide")
 
-ROOT = Path(__file__).resolve().parents[1]
+# Streamlit Cloud repo root fix
+ROOT = Path("/mount/src")
 DATA_DIR = ROOT / "data" / "processed"
 
 # -----------------------------
