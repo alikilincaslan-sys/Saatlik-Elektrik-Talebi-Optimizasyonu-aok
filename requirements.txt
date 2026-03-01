@@ -1,0 +1,14 @@
+streamlit>=1.10
+pandas
+openpyxl
+altair
+numpy
+reportlab
+plotly
+python-pptx
+Pillow
+matplotlib
+vl-convert-python
+pypsa
+highspy
+pyarrow
