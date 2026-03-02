@@ -236,6 +236,71 @@ if run_btn:
         # Net load (optional)
         out["net_load_mwh"] = (out["consumption_mwh"] - out["solar_unlic_mwh"]).clip(lower=0)
 
+            # -----------------------------------------
+    # YEAR ANALYSIS (Shape bazlı etiketleme)
+    # -----------------------------------------
+    with st.spinner("Yıllar analiz ediliyor (shape bazlı)..."):
+
+        year_summary = []
+
+        for yr in sorted(out.index.year.unique()):
+            df_y = out[out.index.year == yr].copy()
+            if len(df_y) < 8000:
+                continue
+
+            load_shape = df_y["consumption_mwh"] / df_y["consumption_mwh"].mean()
+            wind_shape = normalize_shape_max(df_y["wind_total_mwh"])
+            solar_shape = normalize_shape_max(df_y["solar_total_mwh"])
+            hydro_shape = normalize_shape_max(df_y["hydro_mwh"])
+
+            # Shape-based stress proxy
+            stress = load_shape - wind_shape - solar_shape - hydro_shape
+            worst_100h = stress.sort_values(ascending=False).head(100).mean()
+
+            year_summary.append({
+                "Year": yr,
+                "Total_Load_TWh": df_y["consumption_mwh"].sum()/1e6,
+                "Peak_Load_GW": df_y["consumption_mwh"].max()/1000,
+                "Wind_Index": wind_shape.mean(),
+                "Solar_Index": solar_shape.mean(),
+                "Hydro_Index": hydro_shape.mean(),
+                "Stress_Score": worst_100h
+            })
+
+        summary_df = pd.DataFrame(year_summary).sort_values("Year")
+
+    st.subheader("Yıl Özeti (Shape Bazlı)")
+
+    st.dataframe(
+        summary_df.style.format({
+            "Total_Load_TWh": "{:.1f}",
+            "Peak_Load_GW": "{:.1f}",
+            "Wind_Index": "{:.3f}",
+            "Solar_Index": "{:.3f}",
+            "Hydro_Index": "{:.3f}",
+            "Stress_Score": "{:.3f}"
+        })
+    )
+
+    # Etiketleme
+    driest_year = summary_df.loc[summary_df["Hydro_Index"].idxmin(), "Year"]
+    low_wind_year = summary_df.loc[summary_df["Wind_Index"].idxmin(), "Year"]
+    low_solar_year = summary_df.loc[summary_df["Solar_Index"].idxmin(), "Year"]
+    stress_year = summary_df.loc[summary_df["Stress_Score"].idxmax(), "Year"]
+    high_load_year = summary_df.loc[summary_df["Total_Load_TWh"].idxmax(), "Year"]
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("🌊 En Kurak Yıl", driest_year)
+    c2.metric("💨 Düşük Rüzgar Yılı", low_wind_year)
+    c3.metric("☀️ Düşük Güneş Yılı", low_solar_year)
+    c4.metric("⚠️ En Stresli Şekil Yılı", stress_year)
+    c5.metric("📈 En Yüksek Talep Yılı", high_load_year)
+        
+
+
+
+
+    
     # Create base year profiles
     with st.spinner(f"{base_year} için 8760 profilleri üretiliyor..."):
         base = out[out.index.year == base_year].copy()
