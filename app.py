@@ -122,9 +122,23 @@ if not use_upload:
         st.stop()
 
 if use_upload:
-    cons_file = st.file_uploader("Tüketim Excel'i (2021–2025)", type=["xlsx", "xls"])
-    lic_gen_file = st.file_uploader("Lisanslı Üretim Excel'i (2021–2025)", type=["xlsx", "xls"])
-    unlic_gen_file = st.file_uploader("Lisanssız Üretim Excel'i (2021–2025)", type=["xlsx", "xls"])
+    cons_file = st.file_uploader(
+    "Tüketim Excel'i (2021–2025)",
+    type=["xlsx", "xls"],
+    key="cons_upload"
+)
+
+lic_gen_file = st.file_uploader(
+    "Lisanslı Üretim Excel'i (2021–2025)",
+    type=["xlsx", "xls"],
+    key="lic_upload"
+)
+
+unlic_gen_file = st.file_uploader(
+    "Lisanssız Üretim Excel'i (2021–2025)",
+    type=["xlsx", "xls"],
+    key="unlic_upload"
+)
 else:
     st.caption(f"Repo içinden seçiliyor: {RAW_DIR}")
     cons_file = st.selectbox("Tüketim dosyası", options=raw_files, format_func=lambda p: p.name)
